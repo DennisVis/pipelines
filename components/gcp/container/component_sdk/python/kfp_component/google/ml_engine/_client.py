@@ -18,50 +18,12 @@ import time
 
 import googleapiclient.discovery as discovery
 from googleapiclient import errors
-from ..common import wait_operation_done
+from ..common import wait_operation_done, ClientWithRetries
 
 
-def _retry(func, tries=5, delay=1):
-    """Retry decorator for methods in MLEngineClient class.
-
-    It bypasses the BrokenPipeError by directly accessing the `_build_client` method
-    and rebuilds `_ml_client` after `delay` seconds.
-
-    Args:
-         tries (int): Total number of retries if BrokenPipeError/IOError is raised.
-         delay (int): Number of seconds to wait between consecutive retries.
-    """
-
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        _tries, _delay = tries, delay
-        while _tries:
-            try:
-                return func(self, *args, **kwargs)
-            except (BrokenPipeError, IOError) as e:
-                _tries -= 1
-                if not _tries:
-                    raise
-
-                logging.warning(
-                    'Caught {}. Retrying in {} seconds...'.format(
-                        e._class__.__name__, _delay
-                    )
-                )
-
-                time.sleep(_delay)
-                # access _build_client method and rebuild Http Client
-                self._build_client()
-
-    return wrapper
-
-
-class MLEngineClient:
+class MLEngineClient(ClientWithRetries):
     """ Client for calling MLEngine APIs.
     """
-
-    def __init__(self):
-        self._build_client()
 
     def _build_client(self):
         self._ml_client = discovery.build('ml', 'v1', cache_discovery=False)
