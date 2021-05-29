@@ -17,12 +17,14 @@ import time
 
 import googleapiclient.discovery as discovery
 from googleapiclient import errors
-from ..common import wait_operation_done
+from ..common import wait_operation_done, ClientWithRetries
 
-class MLEngineClient:
+
+class MLEngineClient(ClientWithRetries):
     """ Client for calling MLEngine APIs.
     """
-    def __init__(self):
+
+    def _build_client(self):
         self._ml_client = discovery.build('ml', 'v1', cache_discovery=False)
 
     def create_job(self, project_id, job):
