@@ -29,6 +29,18 @@ class DataflowClient:
             body = launch_parameters
         ).execute()
 
+    def launch_flex_template(self, project_id, container_spec_gcs_path, location,
+        validate_only, launch_parameters):
+        if 'containerSpecGcsPath' not in launch_parameters:
+            launch_parameters['containerSpecGcsPath'] = container_spec_gcs_path
+
+        return self._df.projects().locations().flexTemplates().launch(
+            projectId = project_id,
+            location = location,
+            validateOnly = validate_only,
+            body = launch_parameters
+        ).execute()
+
     def get_job(self, project_id, job_id, location=None, view=None):
         return self._df.projects().locations().jobs().get(
             projectId = project_id,
