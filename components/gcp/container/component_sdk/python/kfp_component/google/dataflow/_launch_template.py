@@ -82,7 +82,7 @@ def launch_template(project_id, gcs_path, launch_parameters,
             launch_parameters = json.loads(unescaped_launch_paramaters)
         launch_parameters['jobName'] = 'job-' + ctx.context_id()
         response = df_client.launch_template(project_id, gcs_path, 
-            location, validate_only, launch_parameters)
+            location, validate_only, json.dumps(launch_parameters))
         job = response.get('job', None)
         if not job:
             # Validate only mode
