@@ -77,6 +77,9 @@ def launch_template(project_id, gcs_path, launch_parameters,
 
         if not launch_parameters:
             launch_parameters = {}
+        if isinstance(launch_parameters, str):
+            unescaped_launch_paramaters = launch_parameters.replace('"{', '{').replace('}"', '}').replace('\\"', '"')
+            launch_parameters = json.loads(unescaped_launch_paramaters)
         launch_parameters['jobName'] = 'job-' + ctx.context_id()
         response = df_client.launch_template(project_id, gcs_path, 
             location, validate_only, launch_parameters)
