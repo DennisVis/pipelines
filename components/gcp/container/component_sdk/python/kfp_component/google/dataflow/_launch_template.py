@@ -80,9 +80,17 @@ def launch_template(project_id, gcs_path, launch_parameters,
         if isinstance(launch_parameters, str):
             unescaped_launch_paramaters = launch_parameters.replace('"{', '{').replace('}"', '}').replace('\\"', '"')
             launch_parameters = json.loads(unescaped_launch_paramaters)
+
+        logging.info(f'\n\n111 launch_parameters: {launch_parameters}\n\n')
+
+        if 'parameters' in launch_parameters:
+            launch_parameters['parameters'] = json.dumps(launch_parameters['parameters'])
+
+        logging.info(f'\n\n222 launch_parameters: {launch_parameters}\n\n')
+
         launch_parameters['jobName'] = 'job-' + ctx.context_id()
         response = df_client.launch_template(project_id, gcs_path, 
-            location, validate_only, json.dumps(launch_parameters))
+            location, validate_only, launch_parameters)
         job = response.get('job', None)
         if not job:
             # Validate only mode

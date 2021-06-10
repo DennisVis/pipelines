@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+
 import googleapiclient.discovery as discovery
 from googleapiclient import errors
 
@@ -21,6 +23,9 @@ class DataflowClient:
 
     def launch_template(self, project_id, gcs_path, location,
         validate_only, launch_parameters):
+
+        logging.info(f'\n\n333 launch_parameters: {launch_parameters}\n\n')
+
         return self._df.projects().locations().templates().launch(
             projectId = project_id,
             gcsPath = gcs_path,
