@@ -37,8 +37,10 @@ class DataflowClient:
         return self._df.projects().locations().flexTemplates().launch(
             projectId = project_id,
             location = location,
-            validateOnly = validate_only,
-            body = launch_parameters
+            body = {
+                'launchParameter': launch_parameters,
+                'validateOnly': validate_only
+            }
         ).execute()
 
     def get_job(self, project_id, job_id, location=None, view=None):
