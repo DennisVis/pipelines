@@ -23,7 +23,7 @@ from ._client import DataflowClient
 from ._common_ops import (wait_and_dump_job, get_staging_location, 
     read_job_id_and_location, upload_job_id_and_location)
 
-def launch_template(project_id, container_spec_gcs_path, launch_parameters, 
+def launch_flex_template(project_id, container_spec_gcs_path, launch_parameters, 
     location=None, validate_only=None, staging_dir=None, 
     wait_interval=30,
     job_id_output_path='/tmp/kfp/output/dataflow/job_id.txt',
