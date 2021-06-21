@@ -62,7 +62,7 @@ outputs:
     type: UI metadata
 implementation:
   container:
-    image: katanalabs/ml-pipeline-gcp:v20210621-1.6.3-1-g1fcb4ffe-dirty-37bb58
+    image: katanalabs/ml-pipeline-gcp:v20210621-1.6.5-1-g13533637-dirty-37bb58
     args: [
       --ui_metadata_path, {outputPath: MLPipeline UI metadata},
       kfp_component.google.dataflow, launch_flex_template,
