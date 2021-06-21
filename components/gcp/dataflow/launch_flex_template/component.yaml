@@ -67,6 +67,7 @@ implementation:
       --ui_metadata_path, {outputPath: MLPipeline UI metadata},
       kfp_component.google.dataflow, launch_flex_template,
       --project_id, {inputValue: project_id},
+      --container_spec_gcs_path, {inputValue: container_spec_gcs_path},
       --launch_parameters, {inputValue: launch_parameters},
       --location, {inputValue: location},
       --validate_only, {inputValue: validate_only},
