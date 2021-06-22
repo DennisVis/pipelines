@@ -1,157 +1,155 @@
-# Name
 
-Data preparation by using a Flex template to submit a job to Cloud Dataflow
+# Name
+Data preparation by using a flex template to submit a job to Cloud Dataflow.
 
 # Labels
-
 GCP, Cloud Dataflow, Kubeflow, Pipeline
 
 # Summary
-
-A Kubeflow Pipeline component to prepare data by using a Flex template to submit a job to Cloud Dataflow.
+A Kubeflow Pipeline component to prepare data by using a flex template to submit a job to Cloud Dataflow.
 
 # Details
 
 ## Intended use
-
-Use this component when you have a pre-built Cloud Dataflow Flex template and want to launch it as a step in a Kubeflow
-Pipeline.
+Use this component when you have a pre-built Cloud Dataflow flex template and want to launch it as a step in a Kubeflow Pipeline.
 
 ## Runtime arguments
-
 Argument        | Description                 | Optional   | Data type  | Accepted values | Default    |
 :---            | :----------                 | :----------| :----------| :----------     | :----------|
 project_id | The ID of the Google Cloud Platform (GCP) project to which the job belongs. | No | GCPProjectID |  |  |
-location | The regional endpoint to which the job request is directed.| No  |  GCPRegion |    |   |
-launch_parameters | The parameters that are required to launch the flex template. The schema is defined in [LaunchFlexTemplateParameters](https://cloud.google.com/dataflow/docs/reference/rest/v1b3/projects.locations.flexTemplates/launch#LaunchFlexTemplateParameter) | None |
+container_spec_gcs_path | Gcs path to a file with json serialized ContainerSpec as content. | No  | GCSPath  |  |  |
+launch_parameters | The parameters that are required to launch the template. The schema is defined in [LaunchFlexTemplateParameter](https://cloud.google.com/dataflow/docs/reference/rest/v1b3/projects.locations.flexTemplates/launch#LaunchFlexTemplateParameter). The parameter `jobName` is replaced by a generated name. | Yes  |  Dict | A JSON object which has the same structure as [LaunchFlexTemplateParameter](https://cloud.google.com/dataflow/docs/reference/rest/v1b3/projects.locations.flexTemplates/launch#LaunchFlexTemplateParameter) | None |
+location | The regional endpoint to which the job request is directed.| Yes  |  GCPRegion |    |  None |
 staging_dir |  The path to the Cloud Storage directory where the staging files are stored. A random subdirectory will be created under the staging directory to keep the job information. This is done so that you can resume the job in case of failure.|  Yes |  GCSPath |   |  None |
+validate_only | If True, the request is validated but not executed.   |  Yes  |  Boolean |  |  False |
 wait_interval | The number of seconds to wait between calls to get the status of the job. |  Yes  | Integer  |   |  30 |
 
 ## Input data schema
 
-The input `gcs_path` must contain a valid Cloud Dataflow template. The template can be created by following the
-instructions in [Creating Templates](https://cloud.google.com/dataflow/docs/guides/templates/creating-templates). You
-can also use [Google-provided templates](https://cloud.google.com/dataflow/docs/guides/templates/provided-templates).
+The input `container_spec_gcs_path` must contain a valid Cloud Dataflow flex template. The template can be created by following the instructions in [Using Flex Templates](https://cloud.google.com/dataflow/docs/guides/templates/using-flex-templates).
 
 ## Output
-
 Name | Description
 :--- | :----------
 job_id | The id of the Cloud Dataflow job that is created.
 
-## Detailed description
-
-This job use the google
-provided [BigQuery to Cloud Storage Parquet template](https://cloud.google.com/dataflow/docs/guides/templates/provided-batch#running-the-bigquery-to-cloud-storage-parquet-template)
-to run a Dataflow pipeline that reads
-the [Shakespeare word index](https://cloud.google.com/bigquery/public-data#sample_tables)
-sample public dataset and writes the data in Parquet format to the user provided GCS bucket.
-
 ## Caution & requirements
 
 To use the component, the following requirements must be met:
-
 - Cloud Dataflow API is enabled.
-- The component can authenticate to GCP. Refer
-  to [Authenticating Pipelines to GCP](https://www.kubeflow.org/docs/gke/authentication-pipelines/) for details.
-- The output cloud storage bucket must exist before running the pipeline.
+- The component can authenticate to GCP. Refer to [Authenticating Pipelines to GCP](https://www.kubeflow.org/docs/gke/authentication-pipelines/) for details.
 - The Kubeflow user service account is a member of:
-  - `roles/dataflow.developer` role of the project.
-  - `roles/storage.objectCreator` role of the Cloud Storage Object for `staging_dir.` and output data folder.
-- The dataflow controller service account is a member of:
-  - `roles/bigquery.readSessionUser` role to create read sessions in the project.
-  - `roles/bigquery.jobUser` role to run jobs including queries.
-  - `roles/bigquery.dataViewer` role to read data and metadata from the table of view
+    - `roles/dataflow.developer` role of the project.
+    - `roles/storage.objectViewer` role of the Cloud Storage Object `container_spec_gcs_path.`
+    - `roles/storage.objectCreator` role of the Cloud Storage Object `staging_dir.`
 
----
 
-### Follow these steps to use the component in a pipeline:
-
-#### 1. Install the Kubeflow Pipeline SDK:
 
 ```python
-%% capture --no-stderr
+%%capture --no-stderr
 
-!pip3 install kfp - -upgrade
+!pip3 install kfp --upgrade
 ```
 
-#### 2. Load the component using KFP SDK
+2. Load the component using KFP SDK
+
 
 ```python
 import kfp.components as comp
 
-dataflow_template_op = comp.load_component_from_url(
-  'https://raw.githubusercontent.com/kubeflow/pipelines/1.5.0-rc.0/components/gcp/dataflow/launch_flex_template/component.yaml')
-help(dataflow_template_op)
+dataflow_flex_template_op = comp.load_component_from_url(
+    'https://raw.githubusercontent.com/kubeflow/pipelines/master/components/gcp/dataflow/launch_flex_template/component.yaml')
+help(dataflow_flex_template_op)
 ```
 
-#### 3. Configure job parameters
+### Sample
+
+Note: The following sample code works in an IPython notebook or directly in Python code.
+In this sample, we run a Google-provided word count template from `gs://dataflow-templates/latest/flex/Streaming_Data_Generator`. The template takes a json schema file as input and outputs streaming data to a Cloud Storage bucket.
+
+#### Set sample parameters
+
 
 ```python
-PROJECT_ID = '[Your PROJECT_ID]'
-BIGQUERY_TABLE_SPEC = '[Your PROJECT_ID:DATASET_ID.TABLE_ID]'
-GCS_OUTPUT_FOLDER = 'gs://[Your output GCS folder]'
-GCS_STAGING_FOLDER = 'gs://[Your staging GCS folder]'
-LOCATION = 'us'
-# Optional Parameters
-EXPERIMENT_NAME = 'Dataflow - Launch Flex Template'
-
-flex_temp_launch_parameters = {
-  "parameters": {
-    "tableRef": BIGQUERY_TABLE_SPEC,
-    "bucket": GCS_OUTPUT_FOLDER
-  },
-  "containerSpecGcsPath": "gs://dataflow-templates/2021-03-29-00_RC00/flex/BigQuery_to_Parquet",
-}
+# Required Parameters
+PROJECT_ID = '<Please put your project ID here>'
+GCS_SCHEMA_LOCATION = 'gs://<Please put your GCS path to the JSON schema file here>' # No ending slash
 ```
 
-#### 4. Example pipeline that uses the component
+
+```python
+# Optional Parameters
+EXPERIMENT_NAME = 'Dataflow - Launch Flex Template'
+OUTPUT_PATH = '{}/out/sdg'.format(GCS_WORKING_DIR)
+```
+
+#### Example pipeline that uses the component
+
 
 ```python
 import kfp.dsl as dsl
 import json
-
-
 @dsl.pipeline(
-  name='Dataflow launch flex template pipeline',
-  description='Dataflow launch flex template pipeline'
+    name='Dataflow launch flex template pipeline',
+    description='Dataflow launch flex template pipeline'
 )
 def pipeline(
-        project_id=PROJECT_ID,
-        location=LOCATION,
-        launch_parameters=json.dumps(flex_temp_launch_parameters),
-        staging_dir=GCS_STAGING_FOLDER,
-        wait_interval=30):
-  dataflow_template_op(
-    project_id=project_id,
-    location=location,
-    launch_parameters=launch_parameters,
-    staging_dir=staging_dir,
-    wait_interval=wait_interval)
-
+    project_id = PROJECT_ID,
+    container_spec_gcs_path = 'gs://dataflow-templates/latest/flex/Streaming_Data_Generator',
+    launch_parameters = json.dumps({
+       'parameters': {
+           'schemaLocation': GCS_SCHEMA_LOCATION,
+           'sinkType': 'GCS',
+           'outputDirectory': OUTPUT_PATH,
+           'qps': 1,
+       }
+    }),
+    location = '',
+    validate_only = 'False',
+    staging_dir = GCS_WORKING_DIR,
+    wait_interval = 30):
+    dataflow_flex_template_op(
+        project_id = project_id,
+        container_spec_gcs_path = container_spec_gcs_path,
+        launch_parameters = launch_parameters,
+        location = location,
+        validate_only = validate_only,
+        staging_dir = staging_dir,
+        wait_interval = wait_interval)
 ```
 
-#### 5. Create pipeline run
+#### Compile the pipeline
+
 
 ```python
-import kfp
-
 pipeline_func = pipeline
-run_name = pipeline_func.__name__ + ' run'
-
-kfp.Client().create_run_from_pipeline_func(
-  pipeline_func, 
-  arguments = {},
-  run_name = run_name,
-  experiment_name=EXPERIMENT_NAME,
-  namespace='default'
-)
+pipeline_filename = pipeline_func.__name__ + '.zip'
+import kfp.compiler as compiler
+compiler.Compiler().compile(pipeline_func, pipeline_filename)
 ```
 
-#### 6. Inspect the output
+#### Submit the pipeline for execution
+
 
 ```python
-!gsutil cat $GCS_OUTPUT_FOLDER *
+#Specify pipeline argument values
+arguments = {}
+
+#Get or create an experiment and submit a pipeline run
+import kfp
+client = kfp.Client()
+experiment = client.create_experiment(EXPERIMENT_NAME)
+
+#Submit a pipeline run
+run_name = pipeline_func.__name__ + ' run'
+run_result = client.run_pipeline(experiment.id, run_name, pipeline_filename, arguments)
+```
+
+#### Inspect the output
+
+
+```python
+!gsutil cat $OUTPUT_PATH*
 ```
 
 ## References
@@ -162,8 +160,4 @@ kfp.Client().create_run_from_pipeline_func(
 * [Cloud Dataflow Templates overview](https://cloud.google.com/dataflow/docs/guides/templates/overview)
 
 ## License
-
-By deploying or using this software you agree to comply with
-the [AI Hub Terms of Service](https://aihub.cloud.google.com/u/0/aihub-tos) and
-the [Google APIs Terms of Service](https://developers.google.com/terms/). To the extent of a direct conflict of terms,
-the AI Hub Terms of Service will control.
+By deploying or using this software you agree to comply with the [AI Hub Terms of Service](https://aihub.cloud.google.com/u/0/aihub-tos) and the [Google APIs Terms of Service](https://developers.google.com/terms/). To the extent of a direct conflict of terms, the AI Hub Terms of Service will control.
