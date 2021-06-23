@@ -57,10 +57,6 @@ inputs:
       for details.
     default: ''
     type: Dict
-  - name: output_kfp_path
-    description: 'The path to where the file should be stored.'
-    default: ''
-    type: String
 outputs:
   - name: output_gcs_path
     description: 'The path to the Cloud Storage bucket containing the query output in CSV format.'
