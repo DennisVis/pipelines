@@ -160,6 +160,8 @@ def with_retries(
                 time.sleep(delay)
                 if on_error:
                     on_error()
+                else:
+                    self._build_client()
 
     return wrapper
 
