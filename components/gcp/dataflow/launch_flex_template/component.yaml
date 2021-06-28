@@ -34,13 +34,13 @@ outputs:
   - name: job_id
     description: 'The id of the created dataflow job.'
     type: String
-  - name: ui_metadata
+  - name: MLPipeline UI metadata
     type: UI metadata
 implementation:
   container:
     image: katanalabs/ml-pipeline-gcp:1.6.12
     args: [
-      --ui_metadata_path, {outputPath: ui_metadata},
+      --ui_metadata_path, {outputPath: MLPipeline UI metadata},
       kfp_component.google.dataflow, launch_flex_template,
       --project_id, {inputValue: project_id},
       --location, {inputValue: location},

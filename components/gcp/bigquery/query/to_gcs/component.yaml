@@ -61,13 +61,13 @@ outputs:
   - name: output_gcs_path
     description: 'The path to the Cloud Storage bucket containing the query output in CSV format.'
     type: String
-  - name: ui_metadata
+  - name: MLPipeline UI metadata
     type: UI metadata
 implementation:
   container:
     image: katanalabs/ml-pipeline-gcp:1.6.12
     args: [
-      --ui_metadata_path, {outputPath: ui_metadata},
+      --ui_metadata_path, {outputPath: MLPipeline UI metadata},
       kfp_component.google.bigquery, query,
       --query, {inputValue: query},
       --project_id, {inputValue: project_id},
