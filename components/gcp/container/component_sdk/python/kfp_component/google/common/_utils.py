@@ -127,7 +127,7 @@ def wait_operation_done(get_operation, wait_interval):
 def with_retries(
     func: Callable,
     on_error: Optional[Callable[[], Any]] = None,
-    errors: Tuple[Exception, ...] = Exception,
+    errors: Tuple[Exception, ...] = (),
     number_of_retries: int = 5,
     delay: float = 1,
 ):
@@ -142,11 +142,15 @@ def with_retries(
 
     @wraps(func)
     def wrapper(self, *args, **kwargs):
+        errors_to_retry = errors
+        if len(errors) == 0:
+            errors_to_retry = (BrokenPipeError, IOError)
+
         remaining_retries = number_of_retries
         while remaining_retries:
             try:
                 return func(self, *args, **kwargs)
-            except errors as e:
+            except errors_to_retry as e:
                 remaining_retries -= 1
                 if not remaining_retries:
                     raise
@@ -160,6 +164,8 @@ def with_retries(
                 time.sleep(delay)
                 if on_error:
                     on_error()
+                else:
+                    self._build_client()
 
     return wrapper
 

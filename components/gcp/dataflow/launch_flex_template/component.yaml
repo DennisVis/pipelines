@@ -38,7 +38,7 @@ outputs:
     type: Dict
 implementation:
   container:
-    image: katanalabs/ml-pipeline-gcp:v20210621-1.6.5-1-g13533637-dirty-37bb58
+    image: katanalabs/ml-pipeline-gcp:1.6.10
     args: [
       --ui_metadata_path, {outputPath: ui_metadata},
       kfp_component.google.dataflow, launch_flex_template,

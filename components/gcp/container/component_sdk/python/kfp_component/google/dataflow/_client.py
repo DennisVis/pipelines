@@ -14,13 +14,14 @@
 
 import googleapiclient.discovery as discovery
 from googleapiclient import errors
-from ..common import ClientWithRetries
+from ..common import ClientWithRetries, with_retries
 
 
 class DataflowClient(ClientWithRetries):
     def _build_client(self):
         self._df = discovery.build('dataflow', 'v1b3', cache_discovery=False)
 
+    @with_retries
     def launch_template(
         self, project_id, gcs_path, location, validate_only, launch_parameters
     ):
@@ -32,11 +33,13 @@ class DataflowClient(ClientWithRetries):
             body=launch_parameters
         ).execute()
 
+    @with_retries
     def launch_flex_template(self, project_id, request_body, location):
         return self._df.projects().locations().flexTemplates().launch(
             projectId=project_id, location=location, body=request_body
         ).execute()
 
+    @with_retries
     def get_job(self, project_id, job_id, location=None, view=None):
         return self._df.projects().locations().jobs().get(
             projectId=project_id,
@@ -45,6 +48,7 @@ class DataflowClient(ClientWithRetries):
             view=view
         ).execute()
 
+    @with_retries
     def cancel_job(self, project_id, job_id, location):
         return self._df.projects().locations().jobs().update(
             projectId=project_id,
@@ -55,6 +59,7 @@ class DataflowClient(ClientWithRetries):
             }
         ).execute()
 
+    @with_retries
     def list_aggregated_jobs(
         self,
         project_id,
