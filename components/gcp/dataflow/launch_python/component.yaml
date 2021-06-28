@@ -35,11 +35,11 @@ inputs:
       for resuming the job in case of failure and it will be passed as
       `staging_location` and `temp_location` command line args of the beam code.
     default: ''
-    type: GCSPath
+    type: String
   - name: requirements_file_path
     description: 'Optional, the gcs or local path to the pip requirements file'
     default: ''
-    type: GCSPath
+    type: String
   - name: args
     description: 'The list of args to pass to the python file.'
     default: '[]'
