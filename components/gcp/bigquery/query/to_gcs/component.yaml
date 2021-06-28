@@ -65,7 +65,7 @@ outputs:
     type: UI metadata
 implementation:
   container:
-    image: gcr.io/ml-pipeline/ml-pipeline-gcp:1.6.11
+    image: katanalabs/ml-pipeline-gcp:1.6.12
     args: [
       --ui_metadata_path, {outputPath: ui_metadata},
       kfp_component.google.bigquery, query,
