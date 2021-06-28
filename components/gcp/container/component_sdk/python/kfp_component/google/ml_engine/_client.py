@@ -18,7 +18,7 @@ import time
 
 import googleapiclient.discovery as discovery
 from googleapiclient import errors
-from ..common import wait_operation_done, ClientWithRetries
+from ..common import wait_operation_done, ClientWithRetries, with_retries
 
 
 class MLEngineClient(ClientWithRetries):
@@ -28,7 +28,7 @@ class MLEngineClient(ClientWithRetries):
     def _build_client(self):
         self._ml_client = discovery.build('ml', 'v1', cache_discovery=False)
 
-    @_retry
+    @with_retries
     def create_job(self, project_id, job):
         """Create a new job.
 
@@ -44,7 +44,7 @@ class MLEngineClient(ClientWithRetries):
             body = job
         ).execute()
 
-    @_retry
+    @with_retries
     def cancel_job(self, project_id, job_id):
         """Cancel the specified job.
 
@@ -60,7 +60,7 @@ class MLEngineClient(ClientWithRetries):
             },
         ).execute()
 
-    @_retry
+    @with_retries
     def get_job(self, project_id, job_id):
         """Gets the job by ID.
 
@@ -74,7 +74,7 @@ class MLEngineClient(ClientWithRetries):
         return self._ml_client.projects().jobs().get(
             name=job_name).execute()
 
-    @_retry
+    @with_retries
     def create_model(self, project_id, model):
         """Creates a new model.
 
@@ -89,7 +89,7 @@ class MLEngineClient(ClientWithRetries):
             body = model
         ).execute()
 
-    @_retry
+    @with_retries
     def get_model(self, model_name):
         """Gets a model.
 
@@ -102,7 +102,7 @@ class MLEngineClient(ClientWithRetries):
             name = model_name
         ).execute()
 
-    @_retry
+    @with_retries
     def create_version(self, model_name, version):
         """Creates a new version.
 
@@ -118,7 +118,7 @@ class MLEngineClient(ClientWithRetries):
             body = version
         ).execute()
 
-    @_retry
+    @with_retries
     def get_version(self, version_name):
         """Gets a version.
 
@@ -137,7 +137,7 @@ class MLEngineClient(ClientWithRetries):
                 return None
             raise
 
-    @_retry
+    @with_retries
     def delete_version(self, version_name):
         """Deletes a version.
 
@@ -157,13 +157,13 @@ class MLEngineClient(ClientWithRetries):
                 return None
             raise
 
-    @_retry
+    @with_retries
     def set_default_version(self, version_name):
         return self._ml_client.projects().models().versions().setDefault(
             name = version_name
         ).execute()
 
-    @_retry
+    @with_retries
     def get_operation(self, operation_name):
         """Gets an operation.
 
@@ -191,7 +191,7 @@ class MLEngineClient(ClientWithRetries):
         return wait_operation_done(
             lambda: self.get_operation(operation_name), wait_interval)
 
-    @_retry
+    @with_retries
     def cancel_operation(self, operation_name):
         """Cancels an operation.
 
